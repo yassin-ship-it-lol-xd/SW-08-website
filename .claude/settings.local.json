@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm list:*)",
+      "Read(//Users/moneyman/**)",
+      "Read(//Applications/**)",
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(node screenshot.mjs http://localhost:3000 v1)",
+      "Bash(node screenshot.mjs http://localhost:3000 v2)",
+      "Bash(node screenshot.mjs http://localhost:3000 v3)",
+      "Bash(node screenshot.mjs http://localhost:3000 v4)",
+      "Bash(node screenshot.mjs http://localhost:3000 v5)",
+      "Bash(node screenshot.mjs http://localhost:3000 v6)",
+      "Bash(node screenshot.mjs http://localhost:3000 v7)",
+      "Bash(node screenshot.mjs http://localhost:3000 v8)",
+      "Bash(node screenshot.mjs http://localhost:3000 v9)",
+      "Bash(node screenshot.mjs http://localhost:3000 v10)",
+      "Bash(node -e \":*)",
+      "Bash(node screenshot.mjs http://localhost:3000 final)",
+      "Bash(node screenshot.mjs http://localhost:3000 final2)",
+      "Bash(node screenshot.mjs http://localhost:3000 sections)",
+      "mcp__claude_ai_Google_Calendar__gcal_create_event",
+      "mcp__claude_ai_Attio__search-records",
+      "Bash(gh repo:*)",
+      "Bash(gh auth:*)"
+    ]
+  }
+}

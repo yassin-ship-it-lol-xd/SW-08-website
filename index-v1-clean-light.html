@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ScaleW/08 — Tomorrow's Go-To-Market Systems Built Today</title>
+  <!-- Geist font — actual font used by ColdIQ -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Design tokens from ColdIQ source ─── */
+    :root {
+      --brand-black:    #2c2825;   /* --coldiq---style-guide---brand-color--brand-black-neo */
+      --off-white:      #fffbf5;   /* --coldiq---style-guide---brand-color--off-white-500-neo */
+      --blue:           #0b7bfa;   /* --coldiq---style-guide---brand-color--blue-600-f-main */
+      --green:          #00c950;   /* --coldiq---style-guide---success--green-500-ff */
+      --grey-100:       #f4f4f5;
+      --grey-200:       #e4e4e7;
+      --grey-400:       #9f9fa9;
+      --grey-600:       #52525b;
+      --white:          #ffffff;
+      --neutral-dark:   #0a0a0a;
+      --heading-ls:     -0.02em;
+      --heading-lh:     1.2;
+      --body-lh:        1.5;
+      --radius-md:      0.5rem;
+      --radius-xmd:     0.75rem;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* Scrollbar — exact match from source */
+    ::-webkit-scrollbar { width: 8px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 10px; }
+    ::-webkit-scrollbar-track { box-shadow: inset 0 0 5px #a5aaad; border-radius: 10px; }
+
+    body {
+      font-family: 'Geist', sans-serif;
+      background: var(--off-white);
+      color: var(--brand-black);
+      font-size: 1rem;
+      line-height: var(--body-lh);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* ─── NAV ─── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--off-white); border-bottom: 1px solid var(--grey-200);
+      height: 64px; display: flex; align-items: center;
+    }
+    .nav-inner {
+      max-width: 1120px; margin: 0 auto; padding: 0 28px;
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo { display: flex; align-items: center; margin-left: -6px; }
+    .nav-logo-text {
+      font-size: 19px; font-weight: 600; letter-spacing: var(--heading-ls);
+      color: var(--brand-black);
+    }
+    .nav-cta {
+      background: var(--brand-black); color: var(--white);
+      border: none; border-radius: var(--radius-md);
+      padding: 9px 18px; font-size: 14px; font-weight: 500; cursor: pointer;
+      font-family: inherit; transition: opacity 0.15s; letter-spacing: -0.01em;
+    }
+    .nav-cta:hover { opacity: 0.85; }
+
+    /* ─── GLOW MENU ─── */
+    .glow-nav {
+      position: relative;
+      padding: 6px;
+      border-radius: 16px;
+      background: linear-gradient(to bottom, rgba(255,251,245,0.85), rgba(255,251,245,0.5));
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(228,228,231,0.5);
+      box-shadow: 0 4px 20px rgba(44,40,37,0.08);
+      /* overflow: hidden removed — it flattens CSS 3D transforms */
+    }
+    /* Nav-level radial glow on hover */
+    .glow-nav::before {
+      content: '';
+      position: absolute; inset: -8px;
+      background: radial-gradient(circle at 50% 50%,
+        rgba(59,130,246,0.18) 0%,
+        rgba(147,51,234,0.18) 40%,
+        rgba(239,68,68,0.12) 75%,
+        transparent 100%);
+      border-radius: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+      z-index: 0;
+    }
+    .glow-nav:hover::before { opacity: 1; }
+
+    .glow-nav-list {
+      display: flex; align-items: center; gap: 2px;
+      list-style: none; position: relative; z-index: 1;
+    }
+    .glow-nav-item {
+      position: relative;
+    }
+    /* Per-item colored glow (scales up from behind the item) */
+    .glow-item-glow {
+      position: absolute; inset: 0;
+      border-radius: 12px;
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 0.45s cubic-bezier(0.4,0,0.2,1),
+                  transform 0.45s cubic-bezier(0.34,1.56,0.64,1);
+      pointer-events: none; z-index: 0;
+    }
+    .glow-nav-item:hover .glow-item-glow,
+    .glow-nav-item.glow-active .glow-item-glow {
+      opacity: 1; transform: scale(2);
+    }
+    /* 3D flip wrapper */
+    .glow-item-3d {
+      perspective: 600px;
+      position: relative; border-radius: 12px;
+      transform-style: preserve-3d;
+    }
+    /* Front face — flips away on hover */
+    .glow-item-front {
+      display: flex; align-items: center; gap: 7px;
+      padding: 8px 14px; font-size: 14px; font-weight: 400;
+      color: var(--grey-600); border-radius: 12px; cursor: pointer;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      transform-origin: center bottom;
+      transform: rotateX(0deg);
+      transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), color 0.2s;
+      position: relative; z-index: 1; white-space: nowrap;
+    }
+    .glow-nav-item:hover .glow-item-front,
+    .glow-nav-item.glow-active .glow-item-front {
+      transform: rotateX(-90deg);
+    }
+    /* Back face — flips in on hover */
+    .glow-item-back {
+      display: flex; align-items: center; gap: 7px;
+      padding: 8px 14px; font-size: 14px; font-weight: 400;
+      color: var(--brand-black); border-radius: 12px; cursor: pointer;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      transform-origin: center top;
+      transform: rotateX(90deg);
+      transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), color 0.2s;
+      position: absolute; inset: 0; z-index: 1; white-space: nowrap;
+    }
+    .glow-nav-item:hover .glow-item-back,
+    .glow-nav-item.glow-active .glow-item-back {
+      transform: rotateX(0deg);
+    }
+    .glow-nav-item svg {
+      width: 15px; height: 15px; flex-shrink: 0;
+    }
+    /* Icon color on hover/active */
+    .glow-nav-item[data-color="blue"]:hover .glow-item-back,
+    .glow-nav-item[data-color="blue"].glow-active .glow-item-back { color: #3b82f6; }
+    .glow-nav-item[data-color="violet"]:hover .glow-item-back,
+    .glow-nav-item[data-color="violet"].glow-active .glow-item-back { color: #7c3aed; }
+    .glow-nav-item[data-color="emerald"]:hover .glow-item-back,
+    .glow-nav-item[data-color="emerald"].glow-active .glow-item-back { color: #10b981; }
+
+    /* ─── AURORA ANIMATION ─── */
+    /* Animates transform only — stays on GPU compositor, zero scroll repaint */
+    @keyframes aurora-move {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-60%); }
+    }
+    .aurora-wrap {
+      position: absolute; inset: 0;
+      overflow: hidden; pointer-events: none; z-index: 0;
+    }
+    .aurora-layer {
+      /* Oversized so translateX has room to scroll without gaps */
+      position: absolute; top: -10px; left: -10px;
+      width: 400%; height: calc(100% + 20px);
+      opacity: 0.55;
+      will-change: transform;
+      transform: translateZ(0);
+      filter: blur(12px);
+      --aurora: repeating-linear-gradient(
+        100deg,
+        #3b82f6 10%, #a5b4fc 15%, #93c5fd 20%, #ddd6fe 25%, #60a5fa 30%
+      );
+      --dark-grad: repeating-linear-gradient(
+        100deg,
+        #000 0%, #000 7%, transparent 10%, transparent 12%, #000 16%
+      );
+      background-image: var(--dark-grad), var(--aurora);
+      background-size: 80% 100%, 80% 100%;
+      -webkit-mask-image: radial-gradient(ellipse at 75% 0%, black 15%, transparent 70%);
+      mask-image: radial-gradient(ellipse at 75% 0%, black 15%, transparent 70%);
+      animation: aurora-move 20s linear infinite alternate;
+    }
+    .aurora-layer::after {
+      content: "";
+      position: absolute; inset: 0;
+      background-image: var(--dark-grad), var(--aurora);
+      background-size: 50% 100%, 50% 100%;
+      mix-blend-mode: difference;
+      /* No background-attachment: fixed — was the scroll killer */
+      animation: aurora-move 35s linear infinite alternate-reverse;
+    }
+
+    /* ─── HERO ─── */
+    .hero {
+      background: var(--brand-black);
+      border-left: 1px solid var(--grey-200);
+      border-right: 1px solid var(--grey-200);
+      max-width: none;
+      padding: 120px 28px 80px;
+      position: relative; overflow: hidden;
+      transform: translateZ(0);       /* own compositor layer — no scroll repaint */
+      contain: layout style paint;    /* isolates paint to this element only */
+    }
+    .hero-inner {
+      max-width: 760px; margin: 0 auto;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      position: relative; z-index: 2;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 100px; padding: 5px 12px; font-size: 12px;
+      color: var(--grey-400); font-weight: 400; margin-bottom: 24px;
+    }
+    .hero-badge-dot {
+      width: 6px; height: 6px; background: var(--green); border-radius: 50%;
+    }
+    .hero h1 {
+      font-size: 4rem; font-weight: 700; line-height: var(--heading-lh);
+      letter-spacing: var(--heading-ls); color: var(--white); margin-bottom: 20px;
+    }
+    .hero-sub {
+      font-size: 1.125rem; color: var(--grey-400); line-height: var(--body-lh);
+      margin-bottom: 36px; max-width: 660px;
+    }
+    .hero-actions { display: flex; align-items: center; gap: 16px; }
+    .btn-primary {
+      background: var(--white); color: var(--brand-black);
+      border: none; border-radius: var(--radius-md);
+      padding: 12px 22px; font-size: 14px; font-weight: 500; cursor: pointer;
+      font-family: inherit; transition: opacity 0.15s; letter-spacing: -0.01em;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+    .hero-link {
+      font-size: 14px; color: var(--grey-400); font-weight: 400;
+      transition: color 0.15s;
+    }
+    .hero-link:hover { color: var(--white); }
+    .hero-img-wrap {
+      width: 100%; aspect-ratio: 4/5;
+      border-radius: 12px; overflow: hidden;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .hero-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    /* ─── LOGOS STRIP ─── */
+    .logos {
+      padding: 32px 28px; border-bottom: 1px solid var(--grey-200);
+      background: var(--off-white);
+    }
+    .logos-inner { max-width: 1120px; margin: 0 auto; }
+    .logos-label {
+      text-align: center; font-size: 12px; color: var(--grey-400); font-weight: 400;
+      letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 24px;
+    }
+    .logos-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: 48px; opacity: 0.3; filter: grayscale(1);
+    }
+    .logos-row span { font-weight: 500; font-size: 15px; color: var(--brand-black); }
+
+    /* ─── SECTION SHELL ─── */
+    .section { padding: 80px 28px; background: var(--off-white); }
+    .section-dark-bg { background: var(--brand-black); }
+    .section-grey-bg { background: var(--grey-100); }
+    .section-inner { max-width: 1120px; margin: 0 auto; }
+    .section-head { text-align: center; margin-bottom: 52px; }
+    .section-head h2 {
+      font-size: 2.25rem; font-weight: 700; letter-spacing: var(--heading-ls);
+      line-height: var(--heading-lh); margin-bottom: 12px; color: var(--brand-black);
+    }
+    .section-head p { font-size: 1rem; color: var(--grey-600); line-height: 1.6; max-width: 520px; margin: 0 auto; }
+
+    /* ─── SERVICES ─── */
+    .services-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .service-card {
+      border: 1px solid var(--grey-200); border-radius: 12px; padding: 24px;
+      background: var(--white); transition: box-shadow 0.2s;
+    }
+    .service-card:hover { box-shadow: 0 2px 16px rgba(44,40,37,0.07); }
+    .service-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
+    }
+    .service-card h3 {
+      font-weight: 500; font-size: 1rem; margin-bottom: 12px;
+      letter-spacing: var(--heading-ls); color: var(--brand-black);
+    }
+    .service-card ul { list-style: none; font-size: 0.875rem; color: var(--grey-600); line-height: 2.1; }
+
+    /* ─── DONUT ─── */
+    .donut-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    .donut-eyebrow {
+      font-size: 12px; font-weight: 500; color: var(--blue);
+      letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px;
+    }
+    .donut-layout h2 {
+      font-size: 2rem; font-weight: 400; letter-spacing: var(--heading-ls);
+      line-height: var(--heading-lh); margin-bottom: 14px; color: var(--brand-black);
+    }
+    .donut-layout > div:first-child > p {
+      font-size: 1rem; color: var(--grey-600); line-height: 1.6; margin-bottom: 28px;
+    }
+    .donut-legend { display: flex; flex-direction: column; gap: 12px; }
+    .donut-leg-item { display: flex; align-items: center; gap: 10px; }
+    .donut-leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .donut-leg-item span { font-size: 14px; color: var(--brand-black); font-weight: 400; }
+
+    /* ─── PRICING ─── */
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .pricing-card {
+      border: 1px solid var(--grey-200); border-radius: 12px; padding: 28px;
+      background: var(--white);
+    }
+    .pricing-card.featured {
+      border-color: var(--blue); border-width: 2px;
+      background: #eff6ff; position: relative;
+    }
+    .pricing-badge {
+      position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+      background: var(--blue); color: var(--white); font-size: 11px; font-weight: 500;
+      padding: 4px 12px; border-radius: 100px; white-space: nowrap; letter-spacing: 0.04em;
+    }
+    .pricing-card h3 { font-weight: 500; font-size: 1.125rem; margin-bottom: 8px; letter-spacing: var(--heading-ls); }
+    .pricing-card .desc { font-size: 0.875rem; color: var(--grey-600); line-height: 1.5; margin-bottom: 24px; }
+    .pricing-price {
+      font-size: 2.25rem; font-weight: 400; letter-spacing: var(--heading-ls); margin-bottom: 20px;
+    }
+    .pricing-price span { font-size: 1rem; font-weight: 400; color: var(--grey-400); }
+    .btn-outline {
+      width: 100%; border: 1px solid var(--grey-200); border-radius: var(--radius-md);
+      padding: 11px; font-size: 14px; font-weight: 500; background: var(--white);
+      cursor: pointer; font-family: inherit; transition: background 0.15s; color: var(--brand-black);
+    }
+    .btn-outline:hover { background: var(--grey-100); }
+    .btn-blue {
+      width: 100%; background: var(--blue); color: var(--white);
+      border: none; border-radius: var(--radius-md); padding: 11px;
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      font-family: inherit; transition: opacity 0.15s;
+    }
+    .btn-blue:hover { opacity: 0.88; }
+    .pricing-div { border: none; border-top: 1px solid var(--grey-200); margin: 20px 0; }
+    .pricing-card.featured .pricing-div { border-color: #bfdbfe; }
+    .pricing-features { list-style: none; font-size: 0.875rem; color: var(--grey-600); line-height: 2.3; }
+    .pricing-features li { display: flex; align-items: center; gap: 8px; }
+    .check { color: var(--green); font-size: 14px; font-weight: 600; }
+
+    /* ─── VIDEOS ─── */
+    .videos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .video-card {
+      border-radius: 12px; overflow: hidden; background: var(--white);
+      border: 1px solid var(--grey-200); cursor: pointer; transition: box-shadow 0.2s;
+    }
+    .video-card:hover { box-shadow: 0 4px 20px rgba(44,40,37,0.09); }
+    .video-thumb { position: relative; }
+    .video-thumb img { width: 100%; height: 196px; object-fit: cover; display: block; }
+    .video-play {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    }
+    .video-play-btn {
+      width: 48px; height: 48px; background: rgba(255,255,255,0.92); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+    }
+    .play-tri {
+      width: 0; height: 0;
+      border-top: 8px solid transparent; border-bottom: 8px solid transparent;
+      border-left: 13px solid var(--brand-black); margin-left: 3px;
+    }
+    .video-info { padding: 14px 16px; }
+    .video-info p { font-weight: 500; font-size: 13px; margin-bottom: 2px; color: var(--brand-black); }
+    .video-info span { font-size: 12px; color: var(--grey-400); }
+
+    /* ─── CASE STUDIES ─── */
+    .cases-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .case-card { border: 1px solid var(--grey-200); border-radius: 12px; padding: 24px; background: var(--white); }
+    .case-author { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .case-avatar { width: 38px; height: 38px; background: var(--grey-100); border-radius: 50%; flex-shrink: 0; }
+    .case-name { font-weight: 500; font-size: 13px; color: var(--brand-black); }
+    .case-role { font-size: 12px; color: var(--grey-400); }
+    .case-quote { font-size: 14px; color: var(--grey-600); line-height: 1.65; margin-bottom: 16px; }
+    .case-metric { border-top: 1px solid var(--grey-200); padding-top: 14px; }
+    .case-metric strong { font-size: 1.75rem; font-weight: 400; color: var(--blue); letter-spacing: var(--heading-ls); }
+    .case-metric span { font-size: 13px; color: var(--grey-400); margin-left: 5px; }
+
+    /* ─── TIMELINE ─── */
+    .timeline-wrap { position: relative; }
+    .timeline-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 16px; position: relative;
+    }
+    .tl-step {
+      background: var(--white); border: 1px solid var(--grey-200);
+      border-top: 3px solid var(--blue); border-radius: 12px;
+      padding: 28px 24px 26px; position: relative; overflow: hidden;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .tl-step:hover {
+      box-shadow: 0 4px 24px rgba(11,123,250,0.08);
+      transform: translateY(-2px);
+    }
+    /* Large decorative step number */
+    .tl-step::before {
+      content: attr(data-step);
+      position: absolute; bottom: -12px; right: 10px;
+      font-size: 6rem; font-weight: 800;
+      color: var(--grey-100); line-height: 1;
+      pointer-events: none; user-select: none;
+      letter-spacing: -0.04em;
+    }
+    .tl-period {
+      font-weight: 700; font-size: 12px; color: var(--blue);
+      letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px;
+      display: inline-block;
+    }
+    .tl-title {
+      font-weight: 700; font-size: 17px; margin-bottom: 10px;
+      color: var(--brand-black); line-height: 1.3;
+    }
+    .tl-desc { font-size: 14px; color: var(--grey-600); line-height: 1.6; position: relative; z-index: 1; }
+    @media (max-width: 768px) {
+      .timeline-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 480px) {
+      .timeline-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ─── FINAL CTA ─── */
+    .cta-wrap { text-align: center; }
+    .cta-wrap h2 {
+      font-size: 3rem; font-weight: 700; letter-spacing: var(--heading-ls);
+      line-height: var(--heading-lh); color: var(--white); margin-bottom: 14px;
+    }
+    .cta-wrap p { font-size: 1.125rem; color: var(--grey-400); line-height: 1.6; margin-bottom: 36px; }
+    .btn-white {
+      background: var(--white); color: var(--brand-black);
+      border: none; border-radius: var(--radius-md);
+      padding: 14px 28px; font-size: 15px; font-weight: 500; cursor: pointer;
+      font-family: inherit; transition: opacity 0.15s; letter-spacing: -0.01em;
+    }
+    .btn-white:hover { opacity: 0.9; }
+
+    /* ─── TOOL CAROUSEL ─── */
+    .carousel-section {
+      padding: 52px 0; border-top: 1px solid var(--grey-200); border-bottom: 1px solid var(--grey-200);
+      background: var(--off-white); overflow: hidden;
+    }
+    .carousel-head {
+      text-align: center; margin-bottom: 32px; padding: 0 28px;
+    }
+    .carousel-head p {
+      font-size: 1.75rem; font-weight: 700; color: var(--blue);
+      letter-spacing: var(--heading-ls); line-height: var(--heading-lh);
+    }
+    .carousel-track-wrap {
+      position: relative; width: 100%; overflow: hidden;
+    }
+    /* Fade edges */
+    .carousel-track-wrap::before,
+    .carousel-track-wrap::after {
+      content: ''; position: absolute; top: 0; bottom: 0; width: 120px; z-index: 2; pointer-events: none;
+    }
+    .carousel-track-wrap::before { left: 0; background: linear-gradient(to right, var(--off-white), transparent); }
+    .carousel-track-wrap::after  { right: 0; background: linear-gradient(to left,  var(--off-white), transparent); }
+    @keyframes marquee {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .carousel-track {
+      display: flex; align-items: center; gap: 0;
+      width: max-content;
+      animation: marquee 28s linear infinite;
+    }
+    .carousel-track:hover { animation-play-state: paused; }
+    .carousel-item {
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 44px; height: 52px; flex-shrink: 0;
+      border-right: 1px solid var(--grey-200);
+    }
+    .carousel-item:last-child { border-right: none; }
+    .carousel-logo {
+      height: 34px; width: auto; max-width: 140px; object-fit: contain;
+      opacity: 0.65; transition: opacity 0.2s; display: block;
+    }
+    .carousel-track:hover .carousel-logo { opacity: 1; }
+    /* Text fallback for tools without a logo file */
+    .carousel-wordmark {
+      font-size: 15px; font-weight: 500; color: var(--grey-400);
+      letter-spacing: -0.01em; white-space: nowrap;
+      transition: color 0.2s;
+    }
+    .carousel-track:hover .carousel-wordmark { color: var(--brand-black); }
+
+    /* ─── ABOUT ─── */
+    .about-layout {
+      display: grid; grid-template-columns: 1fr 380px; gap: 80px; align-items: center;
+    }
+    .about-eyebrow {
+      font-size: 2rem; font-weight: 700; color: var(--brand-black);
+      letter-spacing: var(--heading-ls); text-transform: none; margin-bottom: 8px;
+      line-height: 1.2;
+    }
+    .about-name {
+      font-size: 2.25rem; font-weight: 600; letter-spacing: var(--heading-ls);
+      line-height: 1.2; color: var(--brand-black); margin-bottom: 6px;
+    }
+    .about-title {
+      font-size: 1rem; color: var(--grey-400); margin-bottom: 32px;
+    }
+    .about-body { display: flex; flex-direction: column; gap: 18px; }
+    .about-body p {
+      font-size: 1.0625rem; color: var(--grey-600); line-height: 1.8;
+    }
+    .about-photo-col { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    .about-photo-wrap {
+      width: 100%; border-radius: 16px; overflow: hidden;
+      border: 1px solid var(--grey-200);
+      box-shadow: 0 8px 40px rgba(44,40,37,0.09);
+      aspect-ratio: 3/4;
+    }
+    .about-photo-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .about-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--white); border: 1px solid var(--grey-200);
+      border-radius: 100px; padding: 7px 16px;
+      font-size: 13px; font-weight: 500; color: var(--brand-black);
+      box-shadow: 0 2px 8px rgba(44,40,37,0.06);
+    }
+    .about-badge-dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; }
+    @media (max-width: 768px) {
+      .about-layout { grid-template-columns: 1fr; gap: 40px; }
+      .about-photo-col { max-width: 280px; margin: 0 auto; }
+    }
+
+    /* ─── FOOTER ─── */
+    .footer { padding: 44px 28px; border-top: 1px solid var(--grey-200); background: var(--off-white); }
+    .footer-inner {
+      max-width: 1120px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-logo { display: flex; align-items: center; gap: 8px; }
+    .footer-links { display: flex; align-items: center; gap: 24px; }
+    .footer-links a { font-size: 13px; color: var(--grey-600); transition: color 0.15s; }
+    .footer-links a:hover { color: var(--brand-black); }
+    .footer-copy { font-size: 12px; color: var(--grey-400); }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;"><span class="nav-logo-text">ScaleW/08</span></a>
+      </div>
+
+      <!-- Glow Menu -->
+      <nav class="glow-nav" aria-label="Main navigation">
+        <ul class="glow-nav-list">
+
+          <li class="glow-nav-item glow-active" data-color="blue" onclick="document.getElementById('services').scrollIntoView({behavior:'smooth'})">
+            <div class="glow-item-glow" style="background: radial-gradient(circle, rgba(59,130,246,0.18) 0%, rgba(37,99,235,0.07) 55%, transparent 100%);"></div>
+            <div class="glow-item-3d">
+              <div class="glow-item-front">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                Services
+              </div>
+              <div class="glow-item-back">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                Services
+              </div>
+            </div>
+          </li>
+
+          <li class="glow-nav-item" data-color="violet" onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">
+            <div class="glow-item-glow" style="background: radial-gradient(circle, rgba(124,58,237,0.18) 0%, rgba(109,40,217,0.07) 55%, transparent 100%);"></div>
+            <div class="glow-item-3d">
+              <div class="glow-item-front">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                About
+              </div>
+              <div class="glow-item-back">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                About
+              </div>
+            </div>
+          </li>
+
+          <li class="glow-nav-item" data-color="emerald" onclick="document.getElementById('site-footer').scrollIntoView({behavior:'smooth'})">
+            <div class="glow-item-glow" style="background: radial-gradient(circle, rgba(16,185,129,0.18) 0%, rgba(5,150,105,0.07) 55%, transparent 100%);"></div>
+            <div class="glow-item-3d">
+              <div class="glow-item-front">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+                Contact
+              </div>
+              <div class="glow-item-back">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+                Contact
+              </div>
+            </div>
+          </li>
+
+        </ul>
+      </nav>
+
+      <button class="nav-cta">Book a Call</button>
+    </div>
+  </nav>
+
+  <script>
+    // Active item click tracking for glow menu
+    document.querySelectorAll('.glow-nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.glow-nav-item').forEach(i => i.classList.remove('glow-active'));
+        item.classList.add('glow-active');
+      });
+    });
+  </script>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="aurora-wrap"><div class="aurora-layer"></div></div>
+    <div class="hero-inner">
+      <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        B2B Go-To-Market Agency
+      </div>
+      <h1>We build and run your outbound pipeline</h1>
+      <p class="hero-sub">
+        For B2B SaaS companies that want 10–20 qualified sales calls per month without hiring and managing a large outbound team.
+      </p>
+      <div class="hero-actions">
+        <button class="btn-primary">Book a Free Strategy Call</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES: GROW / CREATE / SELL / AUTOMATE -->
+  <section id="services" class="section" style="scroll-margin-top:64px;">
+    <div class="section-inner">
+      <div class="section-head">
+        <h2>Everything needed to run outbound properly</h2>
+        <p>We handle the core pieces needed to turn outbound into qualified sales conversations.</p>
+      </div>
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="service-icon" style="background: #eff6ff;">
+            <svg width="18" height="18" fill="none" stroke="#0b7bfa" stroke-width="1.8" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </div>
+          <h3>Targeting</h3>
+          <ul>
+            <li>ICP definition</li>
+            <li>Decision-maker mapping</li>
+            <li>Prospect list building</li>
+            <li>Segment selection</li>
+          </ul>
+        </div>
+        <div class="service-card">
+          <div class="service-icon" style="background: #f0fdf4;">
+            <svg width="18" height="18" fill="none" stroke="#00c950" stroke-width="1.8" viewBox="0 0 24 24">
+              <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+            </svg>
+          </div>
+          <h3>Infrastructure</h3>
+          <ul>
+            <li>Email setup</li>
+            <li>Deliverability setup</li>
+            <li>Sending systems</li>
+            <li>Tool configuration</li>
+          </ul>
+        </div>
+        <div class="service-card">
+          <div class="service-icon" style="background: #fefce8;">
+            <svg width="18" height="18" fill="none" stroke="#ca8a04" stroke-width="1.8" viewBox="0 0 24 24">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </div>
+          <h3>Outreach</h3>
+          <ul>
+            <li>Messaging angles</li>
+            <li>Cold email copy</li>
+            <li>LinkedIn outreach</li>
+            <li>Follow-ups</li>
+          </ul>
+        </div>
+        <div class="service-card">
+          <div class="service-icon" style="background: #fdf4ff;">
+            <svg width="18" height="18" fill="none" stroke="#a855f7" stroke-width="1.8" viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <h3>Booking</h3>
+          <ul>
+            <li>Reply handling</li>
+            <li>Lead qualification</li>
+            <li>Call booking</li>
+            <li>Performance tracking</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOOL CAROUSEL -->
+  <div class="carousel-section">
+    <div class="carousel-head">
+      <p>Tools in our outbound stack</p>
+    </div>
+    <div class="carousel-track-wrap">
+      <div class="carousel-track">
+        <!-- First set -->
+        <div class="carousel-item"><img class="carousel-logo" src="clayylogo.webp" alt="Clay" style="height:100px;max-width:none;" /></div>
+        <div class="carousel-item"><img class="carousel-logo" src="Instantly-ai_idgr5GP4e__0.png" alt="Instantly" style="height:34px;" /></div>
+        <div class="carousel-item"><img class="carousel-logo" src="HeyReach_Logo-Primary-Dark.png" alt="HeyReach" style="height:32px;" /></div>
+        <div class="carousel-item"><img class="carousel-logo" src="SmallLogo.svg" alt="Prospeo" style="height:34px;width:34px;" /></div>
+        <div class="carousel-item"><img class="carousel-logo" src="Anthropic%20logo%20png.png" alt="Anthropic" style="height:34px;" /></div>
+        <div class="carousel-item"><img class="carousel-logo" src="OpenAI_Logo_0.svg" alt="OpenAI" style="height:22px;" /></div>
+        <div class="carousel-item"><img class="carousel-logo" src="LeadMagic_idy-yJ7uIB_0.svg" alt="LeadMagic" style="height:34px;" /></div>
+        <!-- Duplicate set for seamless loop -->
+        <div class="carousel-item"><img class="carousel-logo" src="clayylogo.webp" alt="Clay" style="height:100px;max-width:none;" /></div>
+        <div class="carousel-item"><img class="carousel-logo" src="Instantly-ai_idgr5GP4e__0.png" alt="Instantly" style="height:34px;" /></div>
+        <div class="carousel-item"><img class="carousel-logo" src="HeyReach_Logo-Primary-Dark.png" alt="HeyReach" style="height:32px;" /></div>
+        <div class="carousel-item"><img class="carousel-logo" src="SmallLogo.svg" alt="Prospeo" style="height:34px;width:34px;" /></div>
+        <div class="carousel-item"><img class="carousel-logo" src="Anthropic%20logo%20png.png" alt="Anthropic" style="height:34px;" /></div>
+        <div class="carousel-item"><img class="carousel-logo" src="OpenAI_Logo_0.svg" alt="OpenAI" style="height:22px;" /></div>
+        <div class="carousel-item"><img class="carousel-logo" src="LeadMagic_idy-yJ7uIB_0.svg" alt="LeadMagic" style="height:34px;" /></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <section class="section section-grey-bg">
+    <div class="section-inner">
+      <div class="section-head">
+        <h2>What happens after you start</h2>
+        <p>A simple 90-day outbound system focused on getting qualified sales conversations on your calendar.</p>
+      </div>
+      <div class="timeline-wrap">
+        <div class="timeline-grid">
+          <div class="tl-step" data-step="01">
+            <p class="tl-period">WEEK 1</p>
+            <p class="tl-title">Setup &amp; Targeting</p>
+            <p class="tl-desc">We define your ICP, set up the outreach infrastructure, and build the messaging angles for your market.</p>
+          </div>
+          <div class="tl-step" data-step="02">
+            <p class="tl-period">WEEKS 2–4</p>
+            <p class="tl-title">Launch &amp; Execution</p>
+            <p class="tl-desc">We start outbound, test messaging, manage follow-ups, and begin generating conversations with qualified prospects.</p>
+          </div>
+          <div class="tl-step" data-step="03">
+            <p class="tl-period">MONTH 2–3</p>
+            <p class="tl-title">Optimize &amp; Scale</p>
+            <p class="tl-desc">We improve performance, refine targeting, and turn outbound into a more consistent pipeline of qualified sales calls.</p>
+          </div>
+          <div class="tl-step" data-step="04">
+            <p class="tl-period">ONGOING</p>
+            <p class="tl-title">Qualified Calls on the Calendar</p>
+            <p class="tl-desc">With the system running and optimized, outbound becomes a consistent source of qualified sales conversations for your team.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="section section-dark-bg">
+    <div class="section-inner">
+      <div class="cta-wrap">
+        <h2>Ready to build your GTM system?</h2>
+        <p>Book a free 30-minute strategy call. No pitch. Just answers.</p>
+        <button class="btn-white">Book a Free Strategy Call →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="section" style="scroll-margin-top:64px;">
+    <div class="section-inner">
+      <div class="about-layout">
+        <div>
+          <p class="about-eyebrow">About</p>
+          <h2 class="about-name">Yassin Muse</h2>
+          <p class="about-title">Founder &amp; CEO, ScaleW08</p>
+          <div class="about-body">
+            <p>I come from a background in sales and marketing, both in school and in practice. ScaleW08 exists because most B2B companies are sitting on a massive outbound opportunity they're not capitalising on.</p>
+            <p>The B2B sales landscape moves fast. AI and modern sales tools have changed what's possible, and the companies that stay on top of them consistently outperform the ones that don't. That's the edge I bring to every engagement.</p>
+            <p>I build and run outbound systems built for today, not three years ago.</p>
+          </div>
+        </div>
+        <div class="about-photo-col">
+          <div class="about-photo-wrap">
+            <img src="7542A271-12F9-4952-B274-D10AF14D3589_1_105_c.jpeg" alt="Yassin Muse, Founder & CEO of ScaleW08" />
+          </div>
+          <div class="about-badge">
+            <span class="about-badge-dot"></span>
+            Founder &amp; CEO
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer id="site-footer" class="footer">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <span style="font-size:15px;font-weight:600;letter-spacing:-0.02em;">ScaleW/08</span>
+      </div>
+      <div class="footer-links">
+        <a href="https://linkedin.com/in/yourprofile" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:6px;">
+          <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+          LinkedIn
+        </a>
+        <a href="mailto:your@email.com">your@email.com</a>
+      </div>
+      <p class="footer-copy">© 2025 ScaleW/08. All rights reserved.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
