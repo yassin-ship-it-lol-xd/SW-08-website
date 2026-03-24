@@ -553,10 +553,7 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
     .about-badge-dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; }
-    @media (max-width: 768px) {
-      .about-layout { grid-template-columns: 1fr; gap: 40px; }
-      .about-photo-col { max-width: 280px; margin: 0 auto; }
-    }
+    /* about-layout responsive handled in shared breakpoints below */
 
     /* ─── FOOTER ─── */
     .footer { padding: 44px 28px; border-top: 1px solid var(--grey-200); background: rgba(0,0,0,0.3); }
@@ -570,8 +567,17 @@
     .footer-links a:hover { color: var(--white); }
     .footer-copy { font-size: 12px; color: var(--grey-400); }
 
-    /* ─── MOBILE ─── */
-    @media (max-width: 768px) {
+    /* ─── TABLET (1024px and below) ─── */
+    @media (max-width: 1024px) {
+      .services-grid { grid-template-columns: repeat(2, 1fr); }
+      .pricing-grid  { grid-template-columns: repeat(2, 1fr); }
+      .videos-grid   { grid-template-columns: repeat(2, 1fr); }
+      .cases-grid    { grid-template-columns: repeat(2, 1fr); }
+      .about-layout  { grid-template-columns: 1fr 320px; gap: 48px; }
+    }
+
+    /* ─── MOBILE (640px and below — real phones) ─── */
+    @media (max-width: 640px) {
       /* iOS Safari fix: background-attachment: fixed causes white flash */
       body { background-attachment: scroll; }
 
@@ -589,9 +595,7 @@
 
       /* Logos strip */
       .logos { padding: 24px 20px; overflow: hidden; }
-      .logos-row {
-        gap: 20px; flex-wrap: wrap; justify-content: center;
-      }
+      .logos-row { gap: 20px; flex-wrap: wrap; justify-content: center; }
       .logos-row img { max-height: 22px; }
 
       /* Sections */
@@ -599,20 +603,14 @@
       .section-head { margin-bottom: 36px; }
       .section-head h2 { font-size: 1.75rem; }
 
-      /* Services — 2 columns on tablet, 1 on phone */
-      .services-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-
-      /* Donut */
-      .donut-layout { grid-template-columns: 1fr; gap: 36px; }
-
-      /* Pricing */
-      .pricing-grid { grid-template-columns: 1fr; }
-
-      /* Videos */
-      .videos-grid { grid-template-columns: 1fr; }
-
-      /* Cases */
-      .cases-grid { grid-template-columns: 1fr; }
+      /* All grids → single column */
+      .services-grid { grid-template-columns: 1fr; gap: 12px; }
+      .pricing-grid  { grid-template-columns: 1fr; }
+      .videos-grid   { grid-template-columns: 1fr; }
+      .cases-grid    { grid-template-columns: 1fr; }
+      .donut-layout  { grid-template-columns: 1fr; gap: 36px; }
+      .about-layout  { grid-template-columns: 1fr; gap: 36px; }
+      .about-photo-col { max-width: 280px; margin: 0 auto; }
 
       /* Carousel */
       .carousel-section { padding: 36px 0; }
@@ -629,12 +627,8 @@
       .footer-links { flex-wrap: wrap; justify-content: center; gap: 16px; }
     }
 
-    @media (max-width: 480px) {
-      /* Single column services on small phones */
-      .services-grid { grid-template-columns: 1fr; }
-      /* Slightly smaller hero heading */
+    @media (max-width: 420px) {
       .hero h1 { font-size: 1.875rem; }
-      /* Tighter section padding */
       .section { padding: 44px 16px; }
     }
   </style>
