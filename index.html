@@ -569,6 +569,74 @@
     .footer-links a { font-size: 13px; color: var(--grey-600); transition: color 0.15s; }
     .footer-links a:hover { color: var(--white); }
     .footer-copy { font-size: 12px; color: var(--grey-400); }
+
+    /* ─── MOBILE ─── */
+    @media (max-width: 768px) {
+      /* iOS Safari fix: background-attachment: fixed causes white flash */
+      body { background-attachment: scroll; }
+
+      /* Nav — hide glow menu, keep logo + CTA */
+      .glow-nav { display: none; }
+      .nav-inner { padding: 0 16px; }
+      .nav-cta { padding: 8px 14px; font-size: 13px; }
+
+      /* Hero */
+      .hero { padding: 96px 20px 56px; border-left: none; border-right: none; }
+      .hero h1 { font-size: 2.25rem; line-height: 1.15; }
+      .hero-sub { font-size: 0.9375rem; }
+      .hero-actions { flex-direction: column; width: 100%; }
+      .btn-primary { width: 100%; padding: 14px; font-size: 15px; }
+
+      /* Logos strip */
+      .logos { padding: 24px 20px; overflow: hidden; }
+      .logos-row {
+        gap: 20px; flex-wrap: wrap; justify-content: center;
+      }
+      .logos-row img { max-height: 22px; }
+
+      /* Sections */
+      .section { padding: 52px 20px; }
+      .section-head { margin-bottom: 36px; }
+      .section-head h2 { font-size: 1.75rem; }
+
+      /* Services — 2 columns on tablet, 1 on phone */
+      .services-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+
+      /* Donut */
+      .donut-layout { grid-template-columns: 1fr; gap: 36px; }
+
+      /* Pricing */
+      .pricing-grid { grid-template-columns: 1fr; }
+
+      /* Videos */
+      .videos-grid { grid-template-columns: 1fr; }
+
+      /* Cases */
+      .cases-grid { grid-template-columns: 1fr; }
+
+      /* Carousel */
+      .carousel-section { padding: 36px 0; }
+      .carousel-head p { font-size: 1.35rem; }
+
+      /* Final CTA */
+      .cta-wrap h2 { font-size: 2rem; }
+      .cta-wrap p { font-size: 1rem; }
+      .btn-white { width: 100%; padding: 14px; font-size: 15px; }
+
+      /* Footer */
+      .footer { padding: 32px 20px; }
+      .footer-inner { flex-direction: column; align-items: center; gap: 20px; text-align: center; }
+      .footer-links { flex-wrap: wrap; justify-content: center; gap: 16px; }
+    }
+
+    @media (max-width: 480px) {
+      /* Single column services on small phones */
+      .services-grid { grid-template-columns: 1fr; }
+      /* Slightly smaller hero heading */
+      .hero h1 { font-size: 1.875rem; }
+      /* Tighter section padding */
+      .section { padding: 44px 16px; }
+    }
   </style>
 </head>
 <body>
