@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Case study: How I built the sales engine at Hey Sid | ScaleW/08</title>
+  <meta name="description" content="Cold email, LinkedIn and cold calling run as one engine for a team of AEs and an SDR: 74 meetings in 11 weeks, 92% show rate." />
+  <link rel="canonical" href="https://www.scalewith08.com/case-study/hey-sid.html" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <meta name="theme-color" content="#111111" />
+  <meta property="og:site_name" content="ScaleW/08" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://www.scalewith08.com/case-study/hey-sid.html" />
+  <meta property="og:title" content="Case study: how I built the sales engine at Hey Sid" />
+  <meta property="og:description" content="Cold email, LinkedIn and cold calling run as one engine for a team of AEs and an SDR: 74 meetings in 11 weeks, 92% show rate." />
+  <meta property="og:image" content="https://www.scalewith08.com/og-case-study.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Case study: how I built the sales engine at Hey Sid" />
+  <meta name="twitter:description" content="Cold email, LinkedIn and cold calling run as one engine for a team of AEs and an SDR: 74 meetings in 11 weeks, 92% show rate." />
+  <meta name="twitter:image" content="https://www.scalewith08.com/og-case-study.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --yellow: #F5E342; --green: #22C55E;
+      --surface: #1E1E1E; --border: #2C2C2C;
+      --muted: #888888; --body: #BABABA; --white: #FFFFFF;
+      --heading-ls: -0.02em; --radius: 0.5rem;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Geist', sans-serif; color: var(--white); line-height: 1.5;
+      background: linear-gradient(180deg, #0C0C0C 0%, #161200 30%, #221A00 60%, #181300 85%, #0E0C00 100%) fixed;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 64px;
+      background: #161616; border-bottom: 1px solid var(--border); display: flex; align-items: center;
+    }
+    .nav-inner { max-width: 1120px; margin: 0 auto; padding: 0 28px; width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .nav-logo { font-size: 19px; font-weight: 600; letter-spacing: var(--heading-ls); }
+    .nav-right { display: flex; align-items: center; gap: 20px; }
+    .nav-back { font-size: 14px; color: var(--body); transition: color 0.15s; }
+    .nav-back:hover { color: var(--white); }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #F5E342 0%, #EFC100 100%); color: #0E0E0E;
+      border: none; border-radius: var(--radius); padding: 10px 18px;
+      font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.88; }
+    .btn:focus-visible, .nav-back:focus-visible { outline: 2px solid var(--yellow); outline-offset: 3px; }
+    .btn-lg { padding: 14px 28px; font-size: 15px; }
+
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+    .hero { padding: 128px 0 52px; text-align: center; }
+    .hero h1 { max-width: 820px; margin-left: auto; margin-right: auto; text-wrap: balance; }
+    .hero .lead { margin: 0 auto; text-wrap: balance; }
+
+    .block {
+      display: grid; grid-template-columns: 260px 1fr; gap: 48px;
+      padding: 48px 0; border-top: 1px solid var(--border); margin-bottom: 0 !important;
+    }
+    .block-head { position: sticky; top: 96px; align-self: start; }
+    .block .block-num { font-size: 13px; font-weight: 700; color: var(--yellow); letter-spacing: 0.08em; margin-bottom: 10px; line-height: 1; }
+    .block .block-head h2 { font-size: 1.625rem; margin-bottom: 10px; }
+    .block .block-sub { font-size: 0.9375rem; color: var(--muted); line-height: 1.6; }
+    .block .statement { font-size: 1.375rem; color: var(--white); line-height: 1.6; font-weight: 500; letter-spacing: -0.01em; }
+
+    /* channel + team rows: label left, text right */
+    .block .roles { grid-template-columns: 1fr; gap: 12px; }
+    .block .role { display: grid; grid-template-columns: 170px 1fr; gap: 6px 24px; align-items: start; }
+    .block .role .role-who { grid-row: span 2; margin: 3px 0 0; }
+    .block .agents { grid-template-columns: 1fr 1fr; }
+    .stack { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .stack-group { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .block .stack-label, .block .role .role-who { font-size: 12px; color: var(--yellow); line-height: 1.4; }
+    .block .agent p, .block .role p { font-size: 0.875rem; color: var(--body); line-height: 1.6; }
+    .roles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .role { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px; }
+    .role-who { font-size: 12px; font-weight: 700; color: var(--yellow); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
+    .role h3 { font-size: 1rem; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+    .stack-label { font-size: 12px; font-weight: 700; color: var(--yellow); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chips span { font-size: 14px; color: var(--white); background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 100px; padding: 6px 14px; }
+    .agents { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .agent { background: var(--surface); border: 1px solid var(--border); border-top: 3px solid var(--yellow); border-radius: 12px; padding: 22px; }
+    .agent h3 { font-size: 1rem; font-weight: 600; margin-bottom: 8px; }
+    .agent p { font-size: 0.875rem; color: var(--body); line-height: 1.6; }
+    .eyebrow { font-size: 12px; font-weight: 700; color: var(--yellow); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 14px; }
+    h1 { font-size: 3rem; font-weight: 700; letter-spacing: var(--heading-ls); line-height: 1.15; margin-bottom: 18px; }
+    .lead { font-size: 1.125rem; color: var(--body); line-height: 1.65; max-width: 680px; }
+
+    .video {
+      margin: 8px 0 56px; aspect-ratio: 16/9; border-radius: 16px;
+      border: 1px dashed rgba(245,227,66,0.4); background: rgba(30,30,30,0.7);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+      color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+    }
+    .play { width: 56px; height: 56px; border-radius: 50%; background: rgba(245,227,66,0.15); display: flex; align-items: center; justify-content: center; }
+    .play::after { content: ''; border-left: 16px solid var(--yellow); border-top: 10px solid transparent; border-bottom: 10px solid transparent; margin-left: 4px; }
+
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 72px; }
+    .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px; }
+    .stat strong { display: block; font-size: 2.25rem; font-weight: 700; color: var(--yellow); letter-spacing: var(--heading-ls); line-height: 1.1; margin-bottom: 6px; }
+    .stat span { font-size: 13px; color: var(--body); line-height: 1.45; display: block; }
+
+    .block { margin-bottom: 52px; }
+    .block h2 { font-size: 1.75rem; font-weight: 700; letter-spacing: var(--heading-ls); line-height: 1.25; margin-bottom: 14px; }
+    .block p { font-size: 1.0625rem; color: var(--body); line-height: 1.75; }
+    .built { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 6px; }
+    .built li { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; font-size: 0.9375rem; color: var(--body); line-height: 1.6; display: flex; gap: 12px; }
+    .built li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+    .quote {
+      border-left: 3px solid var(--yellow); padding: 8px 0 8px 24px; margin-bottom: 64px;
+    }
+    .quote p { font-size: 1.375rem; line-height: 1.55; color: var(--white); font-weight: 500; margin-bottom: 12px; }
+    .quote cite { font-style: normal; font-size: 14px; color: var(--muted); }
+
+    .cta { text-align: center; padding: 64px 0 88px; border-top: 1px solid var(--border); }
+    .cta h2 { font-size: 2.25rem; font-weight: 700; letter-spacing: var(--heading-ls); line-height: 1.2; margin-bottom: 12px; }
+    .cta p { font-size: 1.0625rem; color: var(--muted); margin-bottom: 28px; }
+
+    .footer { padding: 32px 28px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.3); text-align: center; font-size: 12px; color: var(--muted); }
+
+    @media (max-width: 900px) {
+      .block { grid-template-columns: 1fr; gap: 20px; }
+      .block-head { position: static; }
+    }
+    @media (max-width: 760px) {
+      .stats { grid-template-columns: 1fr 1fr; }
+      .block .role { grid-template-columns: 1fr; }
+      .block .role .role-who { grid-row: auto; }
+      .block .agents { grid-template-columns: 1fr; }
+      .built { grid-template-columns: 1fr; }
+      .stack { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      body { background-attachment: scroll; }
+      .nav-inner, .wrap { padding: 0 16px; }
+      .nav-back { display: none; }
+      .hero { padding: 104px 0 36px; }
+      h1 { font-size: 2.125rem; }
+      .lead { font-size: 1rem; }
+      .stat { padding: 16px; }
+      .agents { grid-template-columns: 1fr; }
+      .stat strong { font-size: 1.75rem; }
+      .block h2 { font-size: 1.5rem; }
+      .block .statement { font-size: 1.125rem; }
+      .quote p { font-size: 1.125rem; }
+      .cta h2 { font-size: 1.75rem; }
+      .btn-lg { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="nav-logo" href="/">ScaleW/08</a>
+      <div class="nav-right">
+        <a class="nav-back" href="/">← Back to home</a>
+        <button class="btn" onclick="window.open('https://calendly.com/yassin-muse08/chat-with-ym','_blank')">Book 15 minutes</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <header class="hero">
+      <p class="eyebrow">Case study: Hey Sid</p>
+      <h1>How I built the sales engine at Hey&nbsp;Sid</h1>
+      <p class="lead">Hey Sid is a Gothenburg-based B2B growth company with customers in the Nordics, the UK and the US. I built and ran the engine behind their own pipeline.</p>
+    </header>
+
+    <!-- Video referral: saved in snippets/case-study-video-and-quote.html, add back here when ready -->
+
+    <section class="stats" aria-label="Results">
+      <div class="stat"><strong>74</strong><span>meetings in 11 weeks</span></div>
+      <div class="stat"><strong>92%</strong><span>show rate, up from 75%</span></div>
+      <div class="stat"><strong>21</strong><span>meetings in 6 weeks from the new SDR channel</span></div>
+      <div class="stat"><strong>2x</strong><span>reply rate with signal-based outreach</span></div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <p class="block-num">01</p>
+        <h2>The challenge</h2>
+        
+      </div>
+      <div class="block-body"><p class="statement">Scale outbound across cold email, LinkedIn and cold calling: more volume and more efficiency, without losing quality. Add an SDR call channel. And make it all work for the account executives who close the deals, with systems and procedures that run every day.</p>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <p class="block-num">02</p>
+        <h2>The channels</h2>
+        <p class="block-sub">Three channels, one engine. Every touch tracked in one place.</p>
+      </div>
+      <div class="block-body">
+      <div class="roles">
+        <div class="role">
+          <p class="role-who">Cold email</p>
+          <h3>Signal-based and contextual</h3>
+          <p>Smaller, targeted campaigns built around a verified reason to talk now, instead of big generic sends.</p>
+        </div>
+        <div class="role">
+          <p class="role-who">LinkedIn</p>
+          <h3>From the sales team's own profiles</h3>
+          <p>Outreach and follow-up from the people who would take the meeting, so every conversation started with a real name.</p>
+        </div>
+        <div class="role">
+          <p class="role-who">Cold calling</p>
+          <h3>An SDR dialling from ready lists</h3>
+          <p>Warm leads that had gone quiet turned into call lists with the full context, so the SDR could just dial.</p>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <p class="block-num">03</p>
+        <h2>How it worked with the sales team</h2>
+        <p class="block-sub">The engine only counts if the people who sell get more out of their week.</p>
+      </div>
+      <div class="block-body">
+      <div class="roles">
+        <div class="role">
+          <p class="role-who">Account executives</p>
+          <h3>Walked into held meetings, prepared</h3>
+          <p>First meetings were booked, confirmed and followed up until the prospect showed. The AE got the context before the call and spent the time selling.</p>
+        </div>
+        <div class="role">
+          <p class="role-who">SDR</p>
+          <h3>Dialled instead of building lists</h3>
+          <p>Ready call lists, conversation history and call tasks in the CRM. Less admin, more conversations.</p>
+        </div>
+        <div class="role">
+          <p class="role-who">Sales leadership</p>
+          <h3>Numbers they could trust</h3>
+          <p>Booked vs held meetings and show rate tracked the same way every month, plus a weekly report on every active campaign.</p>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <p class="block-num">04</p>
+        <h2>What I built</h2>
+        
+      </div>
+      <div class="block-body"><ul class="built">
+        <li>One source of truth for target accounts and contacts, so every list started from the same clean data</li>
+        <li>Signal-based and contextual campaigns across cold email and LinkedIn</li>
+        <li>A new SDR call channel, fed with ready call lists built from warm leads</li>
+        <li>The daily sales operations: reply handling, follow-up tracking, and a do-not-contact list kept up to date every week</li>
+        <li>Appointment setting from first reply to held meeting, with a daily check on every booked meeting</li>
+        <li>AI tooling and automations that took the admin off the team</li>
+      </ul>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <p class="block-num">05</p>
+        <h2>The tech stack</h2>
+        <p class="block-sub">The tools the engine ran on, day to day.</p>
+      </div>
+      <div class="block-body">
+      <div class="stack">
+        <div class="stack-group">
+          <p class="stack-label">CRM and database</p>
+          <div class="chips"><span>HubSpot</span><span>Supabase (Postgres)</span></div>
+        </div>
+        <div class="stack-group">
+          <p class="stack-label">Data and enrichment</p>
+          <div class="chips"><span>Prospeo</span><span>Blitz</span><span>Apollo</span><span>Apify</span><span>Exa</span></div>
+        </div>
+        <div class="stack-group">
+          <p class="stack-label">Outreach</p>
+          <div class="chips"><span>Instantly (cold email)</span><span>LinkedIn outreach</span><span>Cold calling</span></div>
+        </div>
+        <div class="stack-group">
+          <p class="stack-label">AI agents and automation</p>
+          <div class="chips"><span>Claude Code</span><span>n8n</span><span>Slack</span></div>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <p class="block-num">06</p>
+        <h2>AI agents that did the admin</h2>
+        <p class="block-sub">No chasing invites, no manual list building, no guessing which meetings happened.</p>
+      </div>
+      <div class="block-body">
+      <div class="agents">
+        <div class="agent">
+          <h3>Show-up agent</h3>
+          <p>Every weekday morning it checks the reps' calendars and the CRM, flags invites that haven't been accepted, drafts reminders and call tasks, and logs every touch in Slack.</p>
+        </div>
+        <div class="agent">
+          <h3>Meeting outcome check</h3>
+          <p>Once a month each rep gets a Slack message for every first meeting. One click marks it held, no-show or cancelled, and it's written back to HubSpot.</p>
+        </div>
+        <div class="agent">
+          <h3>Call list builder</h3>
+          <p>Turns warm leads that went quiet into ready call lists for the SDR, with the conversation context and a call task in the CRM.</p>
+        </div>
+        <div class="agent">
+          <h3>Closed-won to LinkedIn</h3>
+          <p>When a deal closes, connection requests go out to the new customer's team from the founder's profile, after an approval in Slack.</p>
+        </div>
+        <div class="agent">
+          <h3>Campaign health report</h3>
+          <p>A weekly report on every active campaign, so nothing runs dry or breaks without someone knowing.</p>
+        </div>
+        <div class="agent">
+          <h3>Do-not-contact sync</h3>
+          <p>Customers, open deals and opt-outs are kept out of every list automatically, refreshed every week.</p>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <!-- Quote from Rikard: saved in snippets/case-study-video-and-quote.html, add back here when ready -->
+
+    <section class="cta">
+      <h2>Want the same engine around your sales team?</h2>
+      <p>15 minutes. I'll tell you if it fits your team, and if it doesn't, I'll say so.</p>
+      <button class="btn btn-lg" onclick="window.open('https://calendly.com/yassin-muse08/chat-with-ym','_blank')">Book 15 minutes</button>
+    </section>
+  </main>
+
+  <footer class="footer">© 2026 ScaleW/08. All rights reserved.</footer>
+
+</body>
+</html>
